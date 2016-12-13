@@ -280,6 +280,9 @@ module.exports = function VASTPlugin(options) {
 
     /*** Local functions ****/
     function addAdsLabel() {
+      if (settings.showAdsLabel === false) {
+        return;
+      }
       if (adFinished || player.controlBar.getChild('AdsLabel')) {
         return;
       }
