@@ -5,13 +5,20 @@ var VASTResponse = require('./VASTResponse');
 var vastUtil = require('./vastUtil');
 var utilities = require('../../utils/utilityFunctions');
 
-function VASTTracker(assetURI, vastResponse) {
+function triggerVastTrackingEvent(player, eventName) {
+  if (player && player.trigger) {
+    player.trigger('vast.tracking.' + eventName);
+  }
+}
+
+function VASTTracker(assetURI, vastResponse, player) {
   if (!(this instanceof VASTTracker)) {
     return new VASTTracker(assetURI, vastResponse);
   }
 
   this.sanityCheck(assetURI, vastResponse);
   this.initialize(assetURI, vastResponse);
+  this.triggerVastTrackingEvent = triggerVastTrackingEvent.bind(this, player);
 
 }
 
@@ -48,6 +55,7 @@ VASTTracker.prototype.trackURLs = function trackURLs(urls, variables) {
 };
 
 VASTTracker.prototype.trackEvent = function trackEvent(eventName, trackOnce) {
+  this.triggerVastTrackingEvent(eventName);
   this.trackURLs(getEventUris(this.response.trackingEvents[eventName]));
   if (trackOnce) {
     this.response.trackingEvents[eventName] = undefined;
@@ -170,6 +178,7 @@ VASTTracker.prototype.trackProgress = function trackProgress(newProgressInMs) {
   'expand'
 ].forEach(function (eventName) {
     VASTTracker.prototype['track' + utilities.capitalize(eventName)] = function () {
+      this.triggerVastTrackingEvent(eventName);
       this.trackEvent(eventName);
     };
   });
@@ -181,6 +190,7 @@ VASTTracker.prototype.trackProgress = function trackProgress(newProgressInMs) {
   'closeLinear'
 ].forEach(function (eventName) {
     VASTTracker.prototype['track' + utilities.capitalize(eventName)] = function () {
+      this.triggerVastTrackingEvent(eventName);
       this.trackEvent(eventName, true);
     };
   });
@@ -191,6 +201,7 @@ VASTTracker.prototype.trackProgress = function trackProgress(newProgressInMs) {
   'thirdQuartile'
 ].forEach(function (quartile) {
     VASTTracker.prototype['track' + utilities.capitalize(quartile)] = function () {
+      this.triggerVastTrackingEvent(quartile);
       this.quartiles[quartile].tracked = true;
       this.trackEvent(quartile, true);
     };
@@ -198,6 +209,7 @@ VASTTracker.prototype.trackProgress = function trackProgress(newProgressInMs) {
 
 VASTTracker.prototype.trackComplete = function () {
   if(this.quartiles.thirdQuartile.tracked){
+    this.triggerVastTrackingEvent('complete');
     this.trackEvent('complete', true);
   }
 };
