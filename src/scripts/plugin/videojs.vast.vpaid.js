@@ -276,7 +276,7 @@ module.exports = function VASTPlugin(options) {
 
     player.vast.vastResponse = vastResponse;
     logger.debug ("calling adIntegrator.playAd() with vastResponse:", vastResponse);
-    player.vast.adUnit = adIntegrator.playAd(vastResponse, callback);
+    player.vast.adUnit = adIntegrator.playAd(vastResponse, callback, settings.clickUrl);
 
     /*** Local functions ****/
     function addAdsLabel() {
