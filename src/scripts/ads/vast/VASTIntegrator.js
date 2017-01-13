@@ -29,9 +29,12 @@ function VASTIntegrator(player) {
   this.player = player;
 }
 
-VASTIntegrator.prototype.playAd = function playAd(vastResponse, callback) {
+VASTIntegrator.prototype.playAd = function playAd(vastResponse, callback, clickUrl) {
   var that = this;
   callback = callback || utilities.noop;
+  if (clickUrl) {
+    this.clickUrl = clickUrl;
+  }
 
   if (!(vastResponse instanceof VASTResponse)) {
     return callback(new VASTError('On VASTIntegrator, missing required VASTResponse'));
@@ -110,8 +113,8 @@ VASTIntegrator.prototype._createVASTTracker = function createVASTTracker(adMedia
 };
 
 VASTIntegrator.prototype._setupEvents = function setupEvents(adMediaFile, tracker, response, callback) {
-  var previouslyMuted;
   var player = this.player;
+  var previouslyMuted = player.muted();
   player.on('fullscreenchange', trackFullscreenChange);
   player.on('vast.adStart', trackImpressions);
   player.on('pause', trackPause);
@@ -243,6 +246,7 @@ VASTIntegrator.prototype._addSkipButton = function addSkipButton(source, tracker
 
 VASTIntegrator.prototype._addClickThrough = function addClickThrough(mediaFile, tracker, response, callback) {
   var player = this.player;
+  var clickUrl = this.clickUrl;
   var blocker = createClickThroughBlocker(player, tracker, response);
   var updateBlocker = updateBlockerURL.bind(this, blocker, response, player);
 
@@ -293,7 +297,10 @@ VASTIntegrator.prototype._addClickThrough = function addClickThrough(mediaFile, 
       CONTENTPLAYHEAD: vastUtil.formatProgress(player.currentTime() * 1000)
     };
 
-    return clickThroughMacro ? vastUtil.parseURLMacro(clickThroughMacro, variables) : '#';
+    var clickThrough = clickThroughMacro ? vastUtil.parseURLMacro(clickThroughMacro, variables) : '#';
+    return clickUrl ?
+      clickUrl + '&events=FIRST_INTERACTION&url=' + encodeURIComponent(clickThrough) :
+      clickThrough;
   }
 
   function removeBlocker() {
