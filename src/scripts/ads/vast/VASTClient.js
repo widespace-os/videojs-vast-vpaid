@@ -20,6 +20,10 @@ function VASTClient(options) {
     WRAPPER_LIMIT: 5
   };
 
+  if (typeof options.withCredentials === 'undefined') {
+    options.withCredentials = true;
+  }
+
   options = options || {};
   this.settings = utilities.extend({}, options, defaultOptions);
   this.errorURLMacros = [];
@@ -219,7 +223,7 @@ VASTClient.prototype._requestVASTXml = function requestVASTXml(adTagUrl, callbac
     } else {
       logger.info ("requesting adTagUrl: " + adTagUrl);
       http.get(adTagUrl, requestHandler, {
-        withCredentials: true
+        withCredentials: this.settings.withCredentials
       });
     }
   } catch (e) {

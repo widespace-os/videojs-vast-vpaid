@@ -17,7 +17,7 @@ var logger = require ('../utils/consoleLogger');
 module.exports = function VASTPlugin(options) {
   var snapshot;
   var player = this;
-  var vast = new VASTClient();
+  var vast = new VASTClient(options);
   var adsCanceled = false;
   var defaultOpts = {
     // maximum amount of time in ms to wait to receive `adsready` from the ad
