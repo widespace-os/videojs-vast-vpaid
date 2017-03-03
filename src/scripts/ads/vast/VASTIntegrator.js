@@ -84,10 +84,24 @@ VASTIntegrator.prototype._selectAdSource = function selectAdSource(response, cal
   var source;
 
   var playerWidth = dom.getDimension(this.player.el()).width;
+
+  // Sort on size (closest to player width)
   response.mediaFiles.sort(function compareTo(a, b) {
     var deltaA = Math.abs(playerWidth - a.width);
     var deltaB = Math.abs(playerWidth - b.width);
     return deltaA - deltaB;
+  });
+
+  // Sort on type (prioritizing video/mp4)
+  response.mediaFiles.sort(function(a, b) {
+    // If both have the same type let's not change anything
+    if (a.type === b.type) {
+      return 0;
+    } else if (a.type === 'video/mp4') {
+      return -1;
+    } else {
+      return 1;
+    }
   });
 
   source = this.player.selectSource(response.mediaFiles).source;
