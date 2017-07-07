@@ -221,14 +221,17 @@ VASTTracker.prototype.trackErrorWithCode = function trackErrorWithCode(errorcode
 };
 
 VASTTracker.prototype.trackImpressions = function trackImpressions() {
+  this.triggerVastTrackingEvent('impression');
   this.trackURLs(this.response.impressions);
 };
 
 VASTTracker.prototype.trackCreativeView = function trackCreativeView() {
+  this.triggerVastTrackingEvent('creativeView');
   this.trackEvent('creativeView');
 };
 
 VASTTracker.prototype.trackClick = function trackClick() {
+  this.triggerVastTrackingEvent('click');
   this.trackURLs(this.response.clickTrackings);
 };
 
