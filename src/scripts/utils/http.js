@@ -22,16 +22,15 @@ HttpRequest.prototype.run = function (method, url, callback, options) {
   var timeout, timeoutId;
   var xhr = this.createXhr();
   options = options || {};
+  if (options.withCredentials) {
+    xhr.withCredentials = options.withCredentials;
+  }
   timeout = utilities.isNumber(options.timeout) ? options.timeout : 0;
 
   xhr.open(method, urlUtils.urlParts(url).href, true);
 
   if (options.headers) {
     setHeaders(xhr, options.headers);
-  }
-
-  if (options.withCredentials) {
-    xhr.withCredentials = true;
   }
 
   xhr.onload = function () {
@@ -76,7 +75,7 @@ HttpRequest.prototype.run = function (method, url, callback, options) {
       statusText);
   };
 
-  xhr.onerror = requestError;
+  xhr.onerror = retryChecker.bind(this);
   xhr.onabort = requestError;
 
   xhr.send();
@@ -98,6 +97,16 @@ HttpRequest.prototype.run = function (method, url, callback, options) {
 
     if (utilities.isDefined(options) && !utilities.isObject(options)) {
       throw new HttpRequestError("Invalid options map '" + options + "'");
+    }
+  }
+
+  // Will retry with credentials off if request fails and withCredentials is on
+  function retryChecker() {
+    if (options.withCredentials) {
+      options.withCredentials = false;
+      this.run(method, url, callback, options);
+    } else {
+      requestError();
     }
   }
 
